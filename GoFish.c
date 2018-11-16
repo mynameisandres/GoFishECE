@@ -7,7 +7,7 @@ A player whose call is unsuccessful and draws the card being asked for does not 
 A player asks for a specific card instead of a rank.A player must still have at least one card of the named rank in order to ask, and must expose that card when asking.This is similar to Happy Families.
 */
 
-/*
+/*PsuedoCode
 
 Players get cards in hand (Default 7)----------(Extra credit more less cards, with more players)
 
