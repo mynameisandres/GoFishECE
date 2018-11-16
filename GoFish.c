@@ -11,35 +11,32 @@ A player asks for a specific card instead of a rank.A player must still have at 
 
 Players get cards in hand (Default 7)----------(Extra credit more less cards, with more players)
 
-All players go(alternating) until everyone has an empty hand, player with most matches wins at the end
+While(until everyone has an empty hand, player with most matches wins at the end)
 {
-	Player goes{ //(Starts at player 1)
-	{
+	//(Starts at player 1)
 		
-		Player picks a player (Not themselves)
-		Player1 asks for a card (Default by rank)----------(Extra credit specific card)
+	Player picks a player (Not themselves)
+	Player asks for a card (Default by rank)----------(Extra credit specific card)
 
-		If card is answered correctlys
-		{
+	If card is answered correctlys
+	{
 
-			Player that was asked gives card(Default all of them that match)----------(Extra credit, just one)
-
-		}
-		else card is wrong
-		{
-			Player picks from pile of cards
-
-			Game checks if they got full match(Four default)----------(Extra credit 2)
-
-			If card from pile is not the card the player asked for ----------(This does not happen with extra credit)
-			{
-				next player set;
-			}
-		}
-
-		Game checks if player got match got full match(Four default)----------(Extra credit 2)
+		Player that was asked gives card(Default all of them that match)----------(Extra credit, just one)
 
 	}
+	else card is wrong
+	{
+
+		Player picks from pile of cards
+
+		If card from pile is not the card the player asked for ----------(This does not happen with extra credit)
+		{
+			next player set;
+		}
+	}
+
+	Game checks if player got match got full match(Four default)----------(Extra credit 2)
+
 }
 */
 
