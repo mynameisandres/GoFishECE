@@ -11,7 +11,18 @@ Description of the Program: Plays a game of Go Fish
 #include < math.h>
 #include <time.h>
 
-const DECKSIZE = 52;
+//To be able to prints the symbols
+#if defined(_WIN32) || defined(__MSDOS__)
+	#define SPADE   "\x06"
+	#define CLUB    "\x05"
+	#define HEART   "\x03"
+	#define DIAMOND "\x04"
+#else
+	#define SPADE   "\xE2\x99\xA0"
+	#define CLUB    "\xE2\x99\xA3"
+	#define HEART   "\xE2\x99\xA5"
+	#define DIAMOND "\xE2\x99\xA6"
+#endif
 
 //adds structure for card
 typedef struct card_s
@@ -23,6 +34,27 @@ typedef struct card_s
 	struct card_s *previous;
 
 } card;
+
+//Structure for a deck
+typedef struct deck_s {
+
+	//Deck size
+	int deckSize;
+
+	//declares pointers
+	card *headl;
+	card *headr;
+
+
+} deck;
+
+//A structure for a player
+typedef struct player_s {
+
+	card hand;
+	int points;
+
+} player;
 
 //--------------------------------------------------------------------------------------------------------DECK STUFF
 
@@ -42,6 +74,7 @@ void addCards(card *p, card **hl, card **hr)
 	}
 }
 
+//Swaps values in a linked list
 void swap(card *pt, int i, int j) {
 
 	//Grabs the first node
@@ -77,40 +110,82 @@ int rand_gen(int count)
 	return (int) floor(count*frac);
 }
 
-void shuffle(card *headl) {
+//Swaps 10000 randoms cards in the deck to shuffle
+void shuffle(deck *myDeck) {
 
 	//Randomly swaps the values in the double linked list as many times as user wants
 	int first, second;
-	for (int i = 0; i < 1000; i++) {
-		first = rand_gen(DECKSIZE);
-		second = rand_gen(DECKSIZE);
-		swap(headl, first, second);
+	for (int i = 0; i < 10000; i++) {
+		first = rand_gen(myDeck->deckSize);
+		second = rand_gen(myDeck->deckSize);
+		swap(myDeck->headl, first, second);
 	}
 
 }
 
-//add print function
-//add delete function
+//Initilizes a deck
+void initDeck(deck *myDeck) {
+
+	myDeck->deckSize = 52;
+	myDeck->headl = NULL;
+	myDeck->headr = NULL;
+
+}
+
+//Prints a linked list of cards, goes to end of list
+void printCards(card *cards) {
+
+	card *indexer = cards;
+	while (indexer != NULL) {
+
+		//Checks what suit to print
+		if (strcmp(indexer->suit, "diamonds"))
+			printf("%s", DIAMOND);
+		else if (strcmp(indexer->suit, "clubs"))
+			printf("%s", CLUB);
+		else if (strcmp(indexer->suit, "spades"))
+			printf("%s", SPADE);
+		else
+			printf("%s", HEART);
+
+		//Prints the card value next to suit
+		printf("%d ", indexer->value);
+
+		//Goes to next card in linked list
+		indexer = indexer->next;
+	}
+
+}
+
+//Removes a card from the end of a deck
+card *removeCard(deck *myDeck) {
+
+	//Removes and grabs card from deck
+	card *endCard = myDeck->headr;
+	myDeck->headr->previous->next = NULL;
+	
+	//Decrements decksize
+	myDeck->deckSize--;
+
+	//Returns grabbed card
+	return endCard;
+}
 
 //-------------------------------------------------------------------------------------------------GAMEPLAY
 
+//Holds the gameplay of the go fish game
 int main(void)
 {
+
 	//randomizes the seed for the random function
 	srand((int)time(NULL));
 
-	//declares pointers
-	card *headl = NULL;
-	card *headr = NULL;
+	//Creates a deck
+	deck *myDeck = malloc(sizeof(deck));
+	initDeck(myDeck);
 
-	//declares variables
+	//Creates file
 	FILE *inp;
-	int numNodes = 0;
-	char cont = 'y';
-	int swaps = 100; //may need to increase
-
-	//FIXME: READ CARDS IN FROM cards.txt file
-	//opens file containing the 52 cards
 	inp = fopen("cards.txt", "r");
 
 	//checks if file exists
@@ -120,46 +195,53 @@ int main(void)
 		return 0;
 	}
 
+	//Function to read file
+
+	//Shuffles the deck
+	shuffle(myDeck);
+
 	//Variations
 
-	/*Extra credit
-	A player gives only one card when asked.
-	A player forms and lays down pairs instead of 4 - card books.
-	A player whose call is unsuccessful and draws the card being asked for does not get another turn.
-	A player asks for a specific card instead of a rank.A player must still have at least one card of the named rank in order to ask, and must expose that card when asking.This is similar to Happy Families.
-	*/
+	//Extra credit
+	//A player gives only one card when asked.
+	//A player forms and lays down pairs instead of 4 - card books.
+	//A player whose call is unsuccessful and draws the card being asked for does not get another turn.
+	//A player asks for a specific card instead of a rank.A player must still have at least one card of the named rank in order to ask, and must expose that card when asking.This is similar to Happy Families.
+	//
 
-	/*PsuedoCode
+	//PsuedoCode
 
-	Players get cards in hand (Default 7)----------(Extra credit more less cards, with more players)
+	//Creates the players
+	player players[2];
 
-	While(until everyone has an empty hand, player with most matches wins at the end)
-	{
-		//(Starts at player 1)
+	//Players get cards in hand (Default 7)----------(Extra credit more less cards, with more players)
 
-		Player picks a player (Not themselves)
-		Player asks for a card (Default by rank)----------(Extra credit specific card)
+	//While(until everyone has an empty hand, player with most matches wins at the end)
+	//{
+	//	//(Starts at player 1)
 
-		If card is answered correctlys
-		{
+	//	Player picks a player (Not themselves)
+	//	Player asks for a card (Default by rank)----------(Extra credit specific card)
 
-			Player that was asked gives card(Default all of them that match)----------(Extra credit, just one)
+	//	If card is answered correctlys
+	//	{
 
-		}
-		else card is wrong
-		{
+	//		Player that was asked gives card(Default all of them that match)----------(Extra credit, just one)
 
-			Player picks from pile of cards
+	//	}
+	//	else card is wrong
+	//	{
 
-			If card from pile is not the card the player asked for ----------(This does not happen with extra credit)
-			{
-				next player set;
-			}
-		}
+	//		Player picks from pile of cards
 
-		Game checks if player got match got full match(Four default)----------(Extra credit 2)
+	//		If card from pile is not the card the player asked for ----------(This does not happen with extra credit)
+	//		{
+	//			next player set;
+	//		}
+	//	}
 
-	}
-	*/
+	//	Game checks if player got match got full match(Four default)----------(Extra credit 2)
+
+	//}
 
 }
