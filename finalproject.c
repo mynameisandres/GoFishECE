@@ -5,174 +5,111 @@ Description of the Program: Plays a game of Go Fish
 */
 
 #define _CRT_SECURE_NO_WARNINGS
-#include<stdio.h>
 #include<string.h>
-#include<math.h>
-#include<stdlib.h>
-#include<time.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <time.h>
+
+const DECKSIZE = 52;
 
 //adds structure for card
 typedef struct card_s
 {
-	char suit[9]; //FIXME: may need to change 7 to a 9 because "diamonds" is longer than 7
-	int value;
-	struct card_s *pt;
+	char suit[9]; 
+	char value[2];
+
+	struct card_s *next;
+	struct card_s *previous;
+
 } card;
 
-//adds structure for item in list FIXME: CHANGE THE INT X TO CARD
-typedef struct node_s {
-	int x;
-	struct node_s *next;
-	struct node_s *previous;
-} node;
+//--------------------------------------------------------------------------------------------------------DECK STUFF
 
-//function prototypes
-void addCards(node *p, node **hl, node **hr, FILE *input);
-void swap(node *pt, int i, int j);
-int rand_gen(int count);
-//add print function
-//add shuffle function that calls swap function
-//add delete function
-
-int main(void)
+//defines function that adds members to list
+void addCards(card *p, card **hl, card **hr)
 {
-	//randomizes the seed for the random function
-	srand((int)time(NULL));
+	//If node starts completly empty
+	if (*hr == NULL) {
+		*hl = p;
+		*hr = p;
+		return;
+	}//Adds to the end of the doubly linked list
+	else {
+		(*hr)->next = p;
+		p->previous = *hr;
+		*hr = p;
+	}
+}
 
-	//declares pointers
-	node *headl = NULL;
-	node *headr = NULL;
-
-	//declares variables
+void readFile(card *p, card **hl, card **hr)
+{
+	//declares pointer for file and temporary card
 	FILE *inp;
-	int numNodes = 0;
-	char cont = 'y';
-	int swaps = 100; //may need to increase
+	card *temp;
+	char filename[] = "cards.txt";
+	char currentValue[3];
+	char currentSuit[9];
 
-	//FIXME: READ CARDS IN FROM cards.txt file
-	//opens file containing the 52 cards
-	inp = fopen("cards.txt", "r"); 
+	//allocates space for card
+	temp = (card*)malloc(sizeof(card));
 
-	//checks if file exists
+	//opens the file
+	inp = fopen("cards.txt", "r");
+
+	//checks if the file was found
 	if (inp == NULL)
 	{
 		printf("File not found.");
-		return 0;
+		return; //exits the function
 	}
 
-	//calls function to read cards into list
-	addCards(headr, &headl, &headr, inp);
+	//reads all 52 cards
+	for (int i = 0; i < 52; i++)
+	{
+		//reads the value and suit
+		fscanf(inp, "%s %s%*c", currentValue, currentSuit);
 
-	//shuffles the cards in the list
+		//prints the value and suit (for debugging)
+		printf("%s %s\n", currentValue, currentSuit);
 
-	//asks players for their names and displays the greeting
+		//puts value and suit into temporary card 
+		//strcpy(*temp->value, currentValue);
+		//strcpy(*temp->suit,currentSuit);
+	}
 
-	//deals cards to the players by adding cards to player lists and deleting cards from the pool
+	//adds card to the list of cards
+	//addCards(temp, *hl, *hr); may 
 
-	//prints the player's hands
 
-	//loops until all cards are matched
-
-	//asks player to enter C to continue
-
-	//takes turns asking players what card they want to take
-
-	//checks if their move is valid
-
-	//checks if opponents have the card
-		//adds card to player's hand
-		//checks if a match is found
-			//adds point to player's score and removes cards from play
-		//allows the player to go again
 }
 
+void swap(card *pt, int i, int j) {
 
-//defines function that adds members to list
-void addCards(node*p, node **hl, node **hr, FILE *input)
-{
-	//loops until reaching the end of file
-	//check ece 175 notebook for fgets function, declare string variable for holding lines
-	//while
+	//Grabs the first node
+	card *index1 = pt;
+	for (int iter = 0; iter < i; iter++)
+		index1 = index1->next;
 
-	//creates temporary node and allocates space
-	node *temp;
-	temp = (node*)malloc(sizeof(node));
+	//Grabs the second node
+	card *index2 = pt;
+	for (int iter = 0; iter < j; iter++)
+		index2 = index2->next;
 
-	//records input
-	printf("Enter an integer: ");
-	scanf("%d", &temp->x);
+	//Stores temp holders for swapped values
+	char tempSuit[9];
+	strcpy(tempSuit, index1->suit);
+	char tempValue[2];
+	strcpy(tempValue, index1->value);
 
-	//adds the member to the end of the list
-	if (*hl == NULL) //checks if list is empty
-	{
-		temp->previous = NULL;
-		temp->next = NULL;
-		*hl = temp;
-		*hr = temp;
-	}
-	else
-	{
-		temp->previous = p;
-		temp->next = NULL;
-		p->next = temp;
-		*hr = temp;
-	}
-}
+	//Sets index1 from index2
+	strcpy(index1->suit, index2->suit);
+	strcpy(index1->value, index2->value);
 
-//defines function that swaps the contents of two elements of the list
-void swap(node *pt, int i, int j)
-{
-	//declares variables
-	node *first = pt;
-	int ival = -1;
-	int jval = -1;
-	int counter = 0;
-	int iChanged = 0;
-	int jChanged = 0;
+	//Sets index2 from the stored values of index1
+	strcpy(index2->suit, tempSuit);
+	strcpy(index2->value, tempValue);
 
-	while (ival == -1 || jval == -1)
-	{
-		if (counter == i)
-			ival = pt->x;
-		if (counter == j)
-			jval = pt->x;
-
-		counter++;
-		if (pt->next != NULL)
-			pt = pt->next;
-	}
-
-	pt = first; //resets pointer 
-	counter = 0;
-
-	while (iChanged == 0) //changes i element to have j value
-	{
-		if (counter == i)
-		{
-			pt->x = jval;
-			iChanged = 1;
-		}
-
-		counter++;
-		if (pt->next != NULL)
-			pt = pt->next;
-	}
-
-	pt = first; //resets pointer 
-	counter = 0;
-
-	while (jChanged == 0) //changes i element to have j value
-	{
-		if (counter == j)
-		{
-			pt->x = ival;
-			jChanged = 1;
-		}
-
-		counter++;
-		if (pt->next != NULL)
-			pt = pt->next;
-	}
 }
 
 //defines function that obtains a random number
@@ -180,5 +117,72 @@ int rand_gen(int count)
 {
 	double frac;
 	frac = (double)rand() / ((double)RAND_MAX + 1);
-	return floor(count*frac);
+	return (int)floor(count*frac);
+}
+
+void shuffle(card *headl) {
+
+	//Randomly swaps the values in the double linked list as many times as user wants
+	int first, second;
+	for (int i = 0; i < 1000; i++) {
+		first = rand_gen(DECKSIZE);
+		second = rand_gen(DECKSIZE);
+		swap(headl, first, second);
+	}
+
+}
+
+//add print function
+//add delete function
+
+//-------------------------------------------------------------------------------------------------GAMEPLAY
+
+int main(void)
+{
+	//randomizes the seed for the random function
+	srand((int)time(NULL));
+
+	//declares pointers
+	card *headl = NULL;
+	card *headr = NULL;
+
+	//declares variables
+	int numNodes = 0;
+	char cont = 'y';
+	int swaps = 100; //may need to increase
+
+	readFile(headr, &headr, &headr);
+
+	//Variations
+
+	/*Extra credit
+	A player gives only one card when asked.
+	A player forms and lays down pairs instead of 4 - card books.
+	A player whose call is unsuccessful and draws the card being asked for does not get another turn.
+	A player asks for a specific card instead of a rank.A player must still have at least one card of the named rank in order to ask, and must expose that card when asking.This is similar to Happy Families.
+	*/
+
+	/*PsuedoCode
+	Players get cards in hand (Default 7)----------(Extra credit more less cards, with more players)
+	While(until everyone has an empty hand, player with most matches wins at the end)
+	{
+		//(Starts at player 1)
+		Player picks a player (Not themselves)
+		Player asks for a card (Default by rank)----------(Extra credit specific card)
+		If card is answered correctlys
+		{
+			Player that was asked gives card(Default all of them that match)----------(Extra credit, just one)
+		}
+		else card is wrong
+		{
+			Player picks from pile of cards
+			If card from pile is not the card the player asked for ----------(This does not happen with extra credit)
+			{
+				next player set;
+			}
+		}
+		Game checks if player got match got full match(Four default)----------(Extra credit 2)
+	}
+	*/
+
 }
