@@ -206,6 +206,66 @@ int gameOver(player players[], int size) {
 	return 1;
 }
 
+int getLength(char *string) {
+
+	int i;
+	for (i = 0; string[i] != '\0'; i++) {
+		//Empty
+	}
+	return i;
+
+}
+
+//Rank to num convertor
+int rankToNum(char *rank) {
+	
+	//Only 10 has a length greater than 1
+	if (getLength(rank) > 1)
+		return 10;
+
+	//Simply conversion from num to num
+	else if (rank[0] >= '1' && rank[0] <= '9')
+		return (rank[0] - '1');
+
+	//For all the special cases
+	else if (rank[0] == 'A')
+		return 1;
+
+	else if (rank[0] == 'Q')
+		return 12;
+
+	else if (rank[0] == 'K')
+		return 13;
+
+	else 
+		return 11;
+
+}
+
+//Reads a deck file
+void readFile(FILE *inp, deck *myDeck) {
+
+	//Creates holds for the rank and suit
+	char rank[3];
+	char inSuit[9];
+
+	//Scans in rank and suit at the same time
+	while (fscanf(inp, "%2s %8s", rank, inSuit) > 0) {
+
+		//Creates the card
+		card *temp = malloc(sizeof(card));
+		temp->next = NULL;
+		temp->previous = NULL;
+		strcmp(temp->suit, inSuit);
+		temp->value = rankToNum(rank);
+
+		//Adds the card to the deck
+		addCards(temp, &(myDeck->headl), &(myDeck->headr));
+
+	}
+
+}
+
 //-------------------------------------------------------------------------------------------------GAMEPLAY
 
 //Holds the gameplay of the go fish game
@@ -231,6 +291,7 @@ int main(void)
 	}
 
 	//Function to read file
+	readFile(inp, myDeck);
 
 	//Shuffles the deck
 	shuffle(myDeck);
@@ -252,13 +313,27 @@ int main(void)
 		getCards(&players[i], myDeck, 7);
 	}
 
-
+	//Variables for gameplay
 	int player = 0;
+	int pickedPlayer;
+	int rankValue;
+	char rank[3];
+
 	while(!gameOver(players, playerAmount))
 	{
-		//(Starts at player 1)
+		//Makes sure while loops runs at least once
+		pickedPlayer = player - 1;
+		//Keeps asking user to pick a player until they pick a good one
+		while (pickedPlayer != (player + 1)) {
+			printf("Player %d, pick another player\n", player + 1);
+			scanf("%d", &pickedPlayer);
+		}
 
-		//	Player picks a player (Not themselves)
+		printf("What rank do you want to ask for?\n");
+		scanf("%2s", rank);
+
+		rankValue = rankToNum(rank);
+	
 		//	Player asks for a card (Default by rank)----------(Extra credit specific card)
 
 		//	If card is answered correctlys
