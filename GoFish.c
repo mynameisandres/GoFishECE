@@ -246,6 +246,20 @@ void readFile(FILE *inp, deck *myDeck) {
 
 }
 
+////Check player if he has a card
+//int lookForCard(card *checkCard, player *playerCheck, player *playerGive) {
+//
+//	card *indexer = playerCheck->headl;
+//	while (indexer != NULL) {
+//		if (strcmp(indexer->value, checkCard->value) == 0) {
+//
+//		}
+//		//Goes to next card in linked list
+//		indexer = indexer->next;
+//	}
+//
+//}
+
 //-------------------------------------------------------------------------------------------------GAMEPLAY
 
 //Holds the gameplay of the go fish game
@@ -314,15 +328,23 @@ int main(void)
 
 	while(!gameOver(players, playerAmount))
 	{
-		//Makes sure while loops runs at least once
-		pickedPlayer = player + 1;
-		//Keeps asking user to pick a player until they pick a good one
-		while (pickedPlayer == (player + 1)) {
-			printf("Player %d, pick a player:\n", player + 1);
-			scanf("%d", &pickedPlayer);
+
+		//Option of picking player when more than 2
+		if (playerAmount > 2) {
+			//Makes sure while loops runs at least once
+			pickedPlayer = player + 1;
+			//Keeps asking user to pick a player until they pick a good one
+			while (pickedPlayer == (player + 1)) {
+				printf("Player %d, pick a player:\n", player + 1); //Need to + 1 because indexing starts with 0
+				scanf("%d", &pickedPlayer);
+			}
+		}
+		//If there are just two players
+		else {
+			pickedPlayer = !player;
 		}
 
-		printf("What rank do you want to ask for?\n");
+		printf("Player %d what rank do you want to ask Player %d for?\n", player + 1, pickedPlayer + 1);//Need to + 1 because indexing starts with 0
 		scanf("%2s", rank);
 	
 		//	Player asks for a card (Default by rank)----------(Extra credit specific card)
