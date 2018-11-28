@@ -322,9 +322,9 @@ int main(void)
 	while(!gameOver(players, playerAmount))
 	{
 		//Makes sure while loops runs at least once
-		pickedPlayer = player - 1;
+		pickedPlayer = player + 1;
 		//Keeps asking user to pick a player until they pick a good one
-		while (pickedPlayer != (player + 1)) {
+		while (pickedPlayer == (player + 1)) {
 			printf("Player %d, pick a player:\n", player + 1);
 			scanf("%d", &pickedPlayer);
 		}
