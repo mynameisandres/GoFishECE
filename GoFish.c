@@ -27,8 +27,8 @@ Description of the Program: Plays a game of Go Fish
 //adds structure for card
 typedef struct card_s
 {
-	char suit[9]; //FIXME: may need to change 7 to a 9 because "diamonds" is longer than 7
-	int value;
+	char suit[9];
+	char value[3];
 
 	struct card_s *next;
 	struct card_s *previous;
@@ -94,15 +94,16 @@ void swap(card *pt, int i, int j) {
 	//Stores temp holders for swapped values
 	char tempSuit[9];
 	strcpy(tempSuit, index1->suit);
-	int tempValue = index1->value;
+	char tempValue[3];
+	strcpy(tempValue, index1->value);
 
 	//Sets index1 from index2
 	strcpy(index1->suit, index2->suit);
-	index1->value = index2->value;
+	strcpy(index1->value, index2->value);
 
 	//Sets index2 from the stored values of index1
 	strcpy(index2->suit, tempSuit);
-	index2->value = tempValue;
+	strcpy(index2->value, tempValue);
 
 }
 
@@ -153,7 +154,7 @@ void printCards(card *cards) {
 			printf("%s", HEART);
 
 		//Prints the card value next to suit
-		printf("%d ", indexer->value);
+		printf("%s ", indexer->value);
 
 		//Goes to next card in linked list
 		indexer = indexer->next;
@@ -216,32 +217,6 @@ int getLength(char *string) {
 
 }
 
-//Rank to num convertor
-int rankToNum(char *rank) {
-	
-	//Only 10 has a length greater than 1
-	if (getLength(rank) > 1)
-		return 10;
-
-	//Simply conversion from num to num
-	else if (rank[0] >= '1' && rank[0] <= '9')
-		return (rank[0] - '1');
-
-	//For all the special cases
-	else if (rank[0] == 'A')
-		return 1;
-
-	else if (rank[0] == 'Q')
-		return 12;
-
-	else if (rank[0] == 'K')
-		return 13;
-
-	else 
-		return 11;
-
-}
-
 //Reads a deck file
 void readFile(FILE *inp, deck *myDeck) {
 
@@ -256,8 +231,8 @@ void readFile(FILE *inp, deck *myDeck) {
 		card *temp = malloc(sizeof(card));
 		temp->next = NULL;
 		temp->previous = NULL;
-		strcmp(temp->suit, inSuit);
-		temp->value = rankToNum(rank);
+		strcpy(temp->suit, inSuit);
+		strcpy(temp->value, rank);
 
 		//Adds the card to the deck
 		addCards(temp, &(myDeck->headl), &(myDeck->headr));
@@ -293,6 +268,8 @@ int main(void)
 	//Function to read file
 	readFile(inp, myDeck);
 
+	printCards(myDeck->headl);
+
 	//Shuffles the deck
 	shuffle(myDeck);
 
@@ -316,7 +293,6 @@ int main(void)
 	//Variables for gameplay
 	int player = 0;
 	int pickedPlayer;
-	int rankValue;
 	char rank[3];
 
 	while(!gameOver(players, playerAmount))
@@ -331,8 +307,6 @@ int main(void)
 
 		printf("What rank do you want to ask for?\n");
 		scanf("%2s", rank);
-
-		rankValue = rankToNum(rank);
 	
 		//	Player asks for a card (Default by rank)----------(Extra credit specific card)
 
