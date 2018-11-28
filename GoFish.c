@@ -5,33 +5,91 @@ Description of the Program: Plays a game of Go Fish
 */
 
 #define _CRT_SECURE_NO_WARNINGS
-#include<stdio.h>
 #include<string.h>
-#include<math.h>
-#include<stdlib.h>
-#include<time.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include < math.h>
+#include <time.h>
+
+const DECKSIZE = 52;
 
 //adds structure for card
 typedef struct card_s
 {
 	char suit[9]; //FIXME: may need to change 7 to a 9 because "diamonds" is longer than 7
 	int value;
-	struct card_s *pt;
+
+	struct card_s *next;
+	struct card_s *previous;
+
 } card;
 
-//adds structure for item in list FIXME: CHANGE THE INT X TO CARD
-typedef struct node_s {
-	int x;
-	struct node_s *next;
-	struct node_s *previous;
-} node;
+//--------------------------------------------------------------------------------------------------------DECK STUFF
 
-//function prototypes
-void addCards(node *p, node **hl, node **hr, FILE *input);
-void swap(node *pt, int i, int j);
-int rand_gen(int count);
+//defines function that adds members to list
+void addCards(card *p, card **hl, card **hr)
+{
+	//If node starts completly empty
+	if (*hr == NULL) {
+		*hl = p;
+		*hr = p;
+		return;
+	}//Adds to the end of the doubly linked list
+	else {
+		(*hr)->next = p;
+		p->previous = *hr;
+		*hr = p;
+	}
+}
+
+void swap(card *pt, int i, int j) {
+
+	//Grabs the first node
+	card *index1 = pt;
+	for (int iter = 0; iter < i; iter++)
+		index1 = index1->next;
+
+	//Grabs the second node
+	card *index2 = pt;
+	for (int iter = 0; iter < j; iter++)
+		index2 = index2->next;
+
+	//Stores temp holders for swapped values
+	char tempSuit[9];
+	strcpy(tempSuit, index1->suit);
+	int tempValue = index1->value;
+
+	//Sets index1 from index2
+	strcpy(index1->suit, index2->suit);
+	index1->value = index2->value;
+
+	//Sets index2 from the stored values of index1
+	strcpy(index2->suit, tempSuit);
+	index2->value = tempValue;
+
+}
+
+//defines function that obtains a random number
+int rand_gen(int count)
+{
+	double frac;
+	frac = (double)rand() / ((double)RAND_MAX + 1);
+	return (int) floor(count*frac);
+}
+
+void shuffle(card *headl) {
+
+	//Randomly swaps the values in the double linked list as many times as user wants
+	int first, second;
+	for (int i = 0; i < 1000; i++) {
+		first = rand_gen(DECKSIZE);
+		second = rand_gen(DECKSIZE);
+		swap(headl, first, second);
+	}
+
+}
+
 //add print function
-//add shuffle function that calls swap function
 //add delete function
 
 //-------------------------------------------------------------------------------------------------GAMEPLAY
@@ -42,8 +100,8 @@ int main(void)
 	srand((int)time(NULL));
 
 	//declares pointers
-	node *headl = NULL;
-	node *headr = NULL;
+	card *headl = NULL;
+	card *headr = NULL;
 
 	//declares variables
 	FILE *inp;
@@ -61,9 +119,6 @@ int main(void)
 		printf("File not found.");
 		return 0;
 	}
-
-	//calls function to read cards into list
-	addCards(headr, &headl, &headr, inp);
 
 	//Variations
 
@@ -107,51 +162,4 @@ int main(void)
 	}
 	*/
 
-}
-
-//--------------------------------------------------------------------------------------------------------DECK STUFF
-
-//defines function that adds members to list
-void addCards(node*p, node **hl, node **hr)
-{
-
-	//If node starts completly empty
-	if (*hr == NULL) {
-		*hl = p;
-		*hr = p;
-		return;
-	}//Adds to the end of the doubly linked list
-	else {
-		(*hr)->next = p;
-		p->previous = *hr;
-		*hr = p;
-	}
-
-}
-
-void swap(node *pt, int i, int j) {
-
-	//Grabs the first node
-	node *index1 = pt;
-	for (int iter = 0; iter < i; iter++)
-		index1 = index1->next;
-
-	//Grabs the second node
-	node *index2 = pt;
-	for (int iter = 0; iter < j; iter++)
-		index2 = index2->next;
-
-	//Swaps the values
-	int temp = index1->x;
-	index1->x = index2->x;
-	index2->x = temp;
-
-}
-
-//defines function that obtains a random number
-int rand_gen(int count)
-{
-	double frac;
-	frac = (double)rand() / ((double)RAND_MAX + 1);
-	return floor(count*frac);
 }
