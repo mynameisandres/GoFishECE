@@ -137,6 +137,16 @@ void initDeck(deck *myDeck) {
 
 }
 
+//Initilizes player
+void initPlayer(player *user) {
+
+	//Initializes the player
+	user->headl = NULL;
+	user->headr = NULL;
+	user->points = 0;
+
+}
+
 //Prints a linked list of cards, goes to end of list
 void printCards(card *cards) {
 
@@ -159,7 +169,7 @@ void printCards(card *cards) {
 		//Goes to next card in linked list
 		indexer = indexer->next;
 	}
-
+	printf("\n");
 }
 
 //Removes a card from the end of a deck
@@ -168,7 +178,9 @@ card *removeCard(deck *myDeck) {
 	//Removes and grabs card from deck
 	card *endCard = myDeck->headr;
 	myDeck->headr->previous->next = NULL;
-	
+	myDeck->headr = myDeck->headr->previous;
+	endCard->previous = NULL;
+
 	//Decrements decksize
 	myDeck->deckSize--;
 
@@ -268,10 +280,14 @@ int main(void)
 	//Function to read file
 	readFile(inp, myDeck);
 
+	printf("Unshuffled deck is:\n");
 	printCards(myDeck->headl);
 
 	//Shuffles the deck
 	shuffle(myDeck);
+
+	printf("Shuffled deck is:\n");
+	printCards(myDeck->headl);
 
 	//Variations
 
@@ -287,10 +303,18 @@ int main(void)
 
 	player *players = malloc(sizeof(player) * playerAmount);
 	for (int i = 0; i < playerAmount; i++) {
+
+		//Initiliazes the player
+		initPlayer(&players[i]);
+
+		//Gives them cards
 		getCards(&players[i], myDeck, 7);
+
+		//Debug to print there hand
+		printf("Player %d cards:\n", i + 1);
+		printCards(players[i].headl);
 	}
 
-	//Variables for gameplay
 	int player = 0;
 	int pickedPlayer;
 	char rank[3];
@@ -301,7 +325,7 @@ int main(void)
 		pickedPlayer = player - 1;
 		//Keeps asking user to pick a player until they pick a good one
 		while (pickedPlayer != (player + 1)) {
-			printf("Player %d, pick another player\n", player + 1);
+			printf("Player %d, pick a player:\n", player + 1);
 			scanf("%d", &pickedPlayer);
 		}
 
