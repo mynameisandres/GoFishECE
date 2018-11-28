@@ -51,7 +51,11 @@ typedef struct deck_s {
 //A structure for a player
 typedef struct player_s {
 
-	card hand;
+	//Begin and start of user hand
+	card *headl;
+	card *headr;
+
+	//User match points
 	int points;
 
 } player;
@@ -171,6 +175,37 @@ card *removeCard(deck *myDeck) {
 	return endCard;
 }
 
+void getCards(player *user, deck *myDeck, int amount) {
+
+	card *cardHolder = NULL;
+	for (int i = 0; i < amount; i++) {
+		cardHolder = removeCard(myDeck);
+		addCards(cardHolder, &(user->headl), &(user->headr));
+	}
+
+}
+
+//Gives if user hand is empty
+int emptyHand(player *user) {
+	//If heal of user is null than the user hand is empty
+	return (user->headl == NULL);
+}
+
+//Checks if every player has empty hands
+int gameOver(player players[], int size) {
+
+	//Loops through players
+	for (int i = 0; i < size; i++) {
+
+		//If any user does not have an empty hand the game keeps going
+		if(!emptyHand(&players[i]))
+			return 0;
+	}
+
+	//If all have empty hands than game is over
+	return 1;
+}
+
 //-------------------------------------------------------------------------------------------------GAMEPLAY
 
 //Holds the gameplay of the go fish game
@@ -207,41 +242,48 @@ int main(void)
 	//A player forms and lays down pairs instead of 4 - card books.
 	//A player whose call is unsuccessful and draws the card being asked for does not get another turn.
 	//A player asks for a specific card instead of a rank.A player must still have at least one card of the named rank in order to ask, and must expose that card when asking.This is similar to Happy Families.
-	//
-
-	//PsuedoCode
 
 	//Creates the players
-	player players[2];
-
 	//Players get cards in hand (Default 7)----------(Extra credit more less cards, with more players)
+	int playerAmount = 2;
 
-	//While(until everyone has an empty hand, player with most matches wins at the end)
-	//{
-	//	//(Starts at player 1)
+	player *players = malloc(sizeof(player) * playerAmount);
+	for (int i = 0; i < playerAmount; i++) {
+		getCards(&players[i], myDeck, 7);
+	}
 
-	//	Player picks a player (Not themselves)
-	//	Player asks for a card (Default by rank)----------(Extra credit specific card)
 
-	//	If card is answered correctlys
-	//	{
+	int player = 0;
+	while(!gameOver(players, playerAmount))
+	{
+		//(Starts at player 1)
 
-	//		Player that was asked gives card(Default all of them that match)----------(Extra credit, just one)
+		//	Player picks a player (Not themselves)
+		//	Player asks for a card (Default by rank)----------(Extra credit specific card)
 
-	//	}
-	//	else card is wrong
-	//	{
+		//	If card is answered correctlys
+		//	{
 
-	//		Player picks from pile of cards
+		//		Player that was asked gives card(Default all of them that match)----------(Extra credit, just one)
 
-	//		If card from pile is not the card the player asked for ----------(This does not happen with extra credit)
-	//		{
-	//			next player set;
-	//		}
-	//	}
+		//	}
+		//	else card is wrong
+		//	{
 
-	//	Game checks if player got match got full match(Four default)----------(Extra credit 2)
+		//		Player picks from pile of cards
 
-	//}
+		//		If card from pile is not the card the player asked for ----------(This does not happen with extra credit)
+		//		{
+		//			next player set;
+		//		}
+		//	}
+
+		//	Game checks if player got match got full match(Four default)----------(Extra credit 2)
+
+		//Increments and resets back to player one if
+		player++;
+		if (player > playerAmount - 1)//Arrays start with zero, thus I substract one
+			player = 0;
+	}
 
 }
