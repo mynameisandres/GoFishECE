@@ -147,11 +147,11 @@ void printCards(card *cards) {
 	while (indexer != NULL) {
 
 		//Checks what suit to print
-		if (strcmp(indexer->suit, "diamonds"))
+		if (strcmp(indexer->suit, "diamonds") == 0)
 			printf("%s", DIAMOND);
-		else if (strcmp(indexer->suit, "clubs"))
+		else if (strcmp(indexer->suit, "clubs") == 0)
 			printf("%s", CLUB);
-		else if (strcmp(indexer->suit, "spades"))
+		else if (strcmp(indexer->suit, "spades") == 0)
 			printf("%s", SPADE);
 		else
 			printf("%s", HEART);
