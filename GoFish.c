@@ -12,17 +12,10 @@ Description of the Program: Plays a game of Go Fish
 #include <time.h>
 
 //To be able to prints the symbols
-#if defined(_WIN32) || defined(__MSDOS__)
-	#define SPADE   "\x06"
-	#define CLUB    "\x05"
-	#define HEART   "\x03"
-	#define DIAMOND "\x04"
-#else
-	#define SPADE   "\xE2\x99\xA0"
-	#define CLUB    "\xE2\x99\xA3"
-	#define HEART   "\xE2\x99\xA5"
-	#define DIAMOND "\xE2\x99\xA6"
-#endif
+#define SPADE   "S_"
+#define CLUB    "C_"
+#define HEART   "H_"
+#define DIAMOND "D_"
 
 //adds structure for card
 typedef struct card_s
