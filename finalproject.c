@@ -268,6 +268,19 @@ void continueCheck() {
 		exit(0);
 }
 
+/*
+//Checks for a match
+void checkMatch(player current, char rank[3])
+{
+	//has variable for holding number of times the rank appears
+	
+	//loops through all the cards and increments variable every time rank appears
+
+	//after loop, if variable says rank appeared four times, then add point to player and remove cards from player's hand
+
+}
+*/
+
 //Adds a point to a player's score
 /*void addPoint(player scorer)
 {
