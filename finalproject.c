@@ -54,6 +54,9 @@ typedef struct deck_s {
 //A structure for a player
 typedef struct player_s {
 
+	//stores player name
+	char name[50];
+
 	//Beginning and end of user hand
 	card *headl;
 	card *headr;
@@ -143,9 +146,10 @@ void initDeck(deck *myDeck) {
 }
 
 //Initializes player
-void initPlayer(player *user) {
+void initPlayer(player *user, char *playerName) {
 
 	//Initializes the player
+	strcpy(user->name, playerName); //assigns their name
 	user->headl = NULL; //no cards
 	user->headr = NULL; //no cards
 	user->points = 0; //no points
@@ -270,10 +274,10 @@ void continueCheck() {
 
 /*
 //Checks for a match
-void checkMatch(player current, char rank[3])
+void checkMatch(player *current, char rank[3])
 {
 	//has variable for holding number of times the rank appears
-	
+
 	//loops through all the cards and increments variable every time rank appears
 
 	//after loop, if variable says rank appeared four times, then add point to player and remove cards from player's hand
@@ -363,20 +367,44 @@ int main(void)
 	//Creates the players
 	//Players get cards in hand (Default 7)----------(Extra credit more less cards, with more players)
 	int playerAmount = 2;
+	char playerName[50];
 
+	//Creates an array of players
 	player *players = malloc(sizeof(player) * playerAmount);
+	
+	//Makes a player struct for each player
 	for (int i = 0; i < playerAmount; i++) {
+		//asks user for name
+		printf("Enter your name, Player %d:", i + 1); //+ 1 necessary otherwise it will start at Player 0
+		scanf("%s", playerName);
 
 		//Initializes the player
-		initPlayer(&players[i]);
+		initPlayer(&players[i], playerName);
 
+	}
+
+	//Greets the players
+	printf("| --------- --------- --------- --------- |\n"); 
+	printf("| --------- --------- --------- --------- |\n");
+	for (int i = 0; i < playerAmount; i++) 
+	{
+		printf("%s, ", players[i].name);
+	}
+	printf("\nLet's play Go Fish\n");
+	printf("| --------- --------- --------- --------- |\n");
+	printf("| --------- --------- --------- --------- |\n");
+
+
+	//Prints the players' cards
+	for (int i = 0; i < playerAmount; i++) {
 		//Gives them cards
 		getCards(&players[i], myDeck, 7);
 
 		//Debug to print their hand
-		printf("Player %d cards:\n", i + 1);
+		printf("%s has cards:\n", players[i].name);
 		printCards(players[i].headl);
 	}
+
 
 	int player = 0; //specifies whose turn it is
 	int pickedPlayer;
