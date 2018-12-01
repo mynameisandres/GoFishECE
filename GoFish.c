@@ -318,7 +318,7 @@ card *goFish(deck *myDeck, player *giveCard) {
 }
 
 //Checks if player has the specified card
-card *lookForCard(char rank[], player *playerCheck, player *playerGive) {
+card *lookForCard(char rank[], player *playerCheck) {
 
 	card *returnMe = NULL;
 
@@ -512,15 +512,29 @@ int main(void)
 			pickedPlayer = !player;
 		}
 
-		printf("%s what rank do you want to ask %s for?\n", players[player].name, players[pickedPlayer].name);//Need to + 1 because indexing starts with 0
-		scanf("%2s", rank);
+		//Keeps asking the player for a card until they give a card they have in hand
+		card *askedCard = NULL;
+		while (askedCard == NULL) {
+
+			//Gets rank from the player and checks if they have the card in there hand
+			printf("%s what rank do you want to ask %s for?\n", players[player].name, players[pickedPlayer].name);//Need to + 1 because indexing starts with 0
+			scanf("%2s", rank);
+			askedCard = lookForCard(rank, &players[player]);
+
+			//Adds card back to the users hand if they have it
+			if (askedCard != NULL)
+				addCard(askedCard, &players[player].headl, &players[player].headr);
+			else
+				printf("You do not have that card\n");
+		}
+
 
 		//Run while loop at least once, unless user hand is empty(Might have to fix this later)
 		card *found = players[player].headl;
 		int cardsFound = 0;
 		while (found != NULL) {//Gets all the specified card from the user hand
 			
-			found = lookForCard(rank, &players[pickedPlayer], &players[player]);
+			found = lookForCard(rank, &players[pickedPlayer]);
 			if (found != NULL) {
 				cardsFound++;
 				addCard(found, &players[player].headl, &players[player].headr);
