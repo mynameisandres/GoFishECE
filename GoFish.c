@@ -128,7 +128,7 @@ void shuffle(deck *myDeck) {
 
 	//Randomly swaps the values in the double linked list as many times as user wants
 	int first, second;
-	for (int i = 0; i < 10000; i++) {
+	for (int i = 0; i < 100000; i++) {
 		//gets two random indexes
 		first = rand_gen(myDeck->deckSize);
 		second = rand_gen(myDeck->deckSize);
@@ -142,7 +142,7 @@ void shuffle(deck *myDeck) {
 //Initializes a deck
 void initDeck(deck *myDeck) {
 
-	myDeck->deckSize = 16;
+	myDeck->deckSize = 52;
 	myDeck->headl = NULL; //no cards
 	myDeck->headr = NULL; //no cards
 
@@ -210,7 +210,7 @@ void addPoint(player *scorer)
 //Checks for a match
 void checkMatch(player *current, char rank[3], int matchNum)
 {
-	int match = 1;
+	int match = 0;
 
 	card *indexer = current->headl;
 	//Loops through the cards in the users hand
@@ -223,9 +223,11 @@ void checkMatch(player *current, char rank[3], int matchNum)
 			if (match == matchNum) {
 				addPoint(current);
 				printf("%s got a match of %s\n", current->name, rank);
+
 				return;
 			}
 		}
+		indexer = indexer->next;
 	}
 }
 
