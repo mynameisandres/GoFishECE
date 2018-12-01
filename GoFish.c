@@ -64,6 +64,9 @@ typedef struct player_s {
 	//User match points
 	int points;
 
+	//Indicates win status of player
+	int winStatus;
+
 } player;
 
 //--------------------------------------------------------------------------------------------------------DECK STUFF
@@ -153,6 +156,7 @@ void initPlayer(player *user, char *playerName) {
 	user->headl = NULL; //no cards
 	user->headr = NULL; //no cards
 	user->points = 0; //no points
+	user->winStatus = 0; //not a winner
 
 }
 
@@ -255,7 +259,6 @@ void readFile(FILE *inp, deck *myDeck) {
 
 }
 
-
 //Asks user if they want to continue
 void continueCheck() {
 	char answer;
@@ -272,25 +275,47 @@ void continueCheck() {
 		exit(0);
 }
 
-/*
-//Checks for a match
-void checkMatch(player *current, char rank[3])
-{
-	//has variable for holding number of times the rank appears
-
-	//loops through all the cards and increments variable every time rank appears
-
-	//after loop, if variable says rank appeared four times, then add point to player and remove cards from player's hand
-
-}
-*/
-
 //Adds a point to a player's score
-/*void addPoint(player scorer)
+void addPoint(player *scorer)
 {
-	scorer.points++;
+	(scorer->points)++;
 }
-*/
+
+//Checks for a match
+int checkMatch(player *current, char rank[3], int matchNum)
+{
+	int match = 1;
+
+	card *indexer = current->headl;
+	//Loops through the cards in the users hand
+	while (indexer != NULL) {
+	
+		if (strcmp(indexer->value, rank) == 0) {
+			match++;
+
+			//When the amount of matches meets the requirements for the function
+			if (match == matchNum) {
+				addPoint(current);
+				return 1;
+			}
+		}
+	}
+
+	//Cards was not found
+	return 0;
+
+}
+
+//Grabs a card from the deck
+card *goFish(deck *myDeck, player *giveCard) {
+
+	//Does the go fish
+	printf("Go fish %s\n", giveCard->name);
+	getCards(giveCard, myDeck, 1);
+
+	//Returns the card that was added to the players hand
+	return giveCard->headr;
+}
 
 //Checks if player has the specified card
 card *lookForCard(char rank[], player *playerCheck, player *playerGive) {
@@ -298,33 +323,34 @@ card *lookForCard(char rank[], player *playerCheck, player *playerGive) {
 	card *returnMe = NULL;
 
 	card *indexer = playerCheck->headl;
-
-	printCards(playerCheck->headl);
-
+	//Loops through all the cards in hand
 	while (indexer != NULL) {
 		if (strcmp(indexer->value, rank) == 0) {
 
-			//Remove the card
+			//When there is only one card in the players hand
 			if ((playerCheck->headl == indexer) && (playerCheck->headr == indexer)) {
 				returnMe = playerCheck->headl;
 				playerCheck->headl = NULL;
-			}
+			}//When the card that mathced is headl
 			else if (playerCheck->headl == indexer) {
 				returnMe = playerCheck->headl;
+				playerCheck->headl->next->previous = NULL;
 				playerCheck->headl = playerCheck->headl->next;
-			}
+			}//When the card that mathced is headr
 			else if (playerCheck->headr == indexer) {
 				returnMe = playerCheck->headr;
-				playerCheck->headl = playerCheck->headl->previous;
-			}
+				playerCheck->headr->previous->next = NULL;
+				playerCheck->headr = playerCheck->headr->previous;
+			}//When the card is simply in the middle of cards
 			else {
 				indexer->next->previous = indexer->previous;
 				indexer->previous->next = indexer->next;
-				indexer->next = NULL;
-				indexer->previous = NULL;
 				returnMe = indexer;
 
 			}
+
+			returnMe->next = NULL;
+			returnMe->previous = NULL;
 			return returnMe;
 		}
 		//Goes to next card in linked list
@@ -333,18 +359,43 @@ card *lookForCard(char rank[], player *playerCheck, player *playerGive) {
 	return returnMe;
 }
 
-/*
+
 //Checks which player won
-int getWinner(player players[])
+void getWinners(player players[], int size)
 {
-	//creates variables to hold which player currently has the most points and how many points they have
+	//Defaults max to the first players points
 
-	//loops through each player and checks if they have the maximum number of points
+	int maxPoints = players[0].points;
+	for (int i = 1; i < size; i++) {
 
-	//returns the index of the player who won
+		//Updates the max points a player has
+		if (players[i].points > maxPoints)
+			maxPoints = players[i].points;
+	}
+	int winners = 0;
+	//Finds winners of the players, there points has to equal the max
+	for (int i = 0; i < size; i++) {
+		if (players[i].points == maxPoints) {
+			winners++;
+			players[i].winStatus = 1;
+		}
+	}
+
+	//Indicates if it was a tie or there is a single winner
+	if (winners > 1) {
+		printf("It is a tie, winners are: \n");
+	}
+	else {
+		printf("Winner is: \n");
+	}
+
+	//Prints the winner
+	for (int i = 0; i < size; i++) {
+		if (players[i].points == maxPoints) {
+			printf("\t%s\n", players[i].name);
+		}
+	}
 }
-
-*/
 
 
 //-------------------------------------------------------------------------------------------------GAMEPLAY
@@ -402,7 +453,7 @@ int main(void)
 	//Makes a player struct for each player
 	for (int i = 0; i < playerAmount; i++) {
 		//asks user for name
-		printf("Enter your name, Player %d:", i + 1); //+ 1 necessary otherwise it will start at Player 0
+		printf("Player %d enter your name: ", i + 1); //+ 1 necessary otherwise it will start at Player 0
 		scanf("%s", playerName);
 
 		//Initializes the player
@@ -413,10 +464,11 @@ int main(void)
 	//Greets the players
 	printf("| --------- --------- --------- --------- |\n");
 	printf("| --------- --------- --------- --------- |\n");
-	for (int i = 0; i < playerAmount; i++)
+	for (int i = 0; i < playerAmount - 1; i++)
 	{
 		printf("%s, ", players[i].name);
 	}
+	printf("%s", players[playerAmount - 1].name);
 	printf("\nLet's play Go Fish\n");
 	printf("| --------- --------- --------- --------- |\n");
 	printf("| --------- --------- --------- --------- |\n");
@@ -437,11 +489,13 @@ int main(void)
 	int pickedPlayer;
 	char rank[3];
 
-	//Asks player to pick cards 
+	//Asks player to pick cards
+	int repeatTurns = 0;
 	while (!gameOver(players, playerAmount))
 	{
 		//ask user if they want to continue the game
-		continueCheck();
+		if(!repeatTurns)
+			continueCheck();
 
 		//Option of picking player when more than 2
 		if (playerAmount > 2) {
@@ -461,33 +515,48 @@ int main(void)
 		printf("%s what rank do you want to ask %s for?\n", players[player].name, players[pickedPlayer].name);//Need to + 1 because indexing starts with 0
 		scanf("%2s", rank);
 
-		lookForCard(rank, &players[pickedPlayer], &players[player]);
+		//Run while loop at least once, unless user hand is empty(Might have to fix this later)
+		card *found = players[player].headl;
+		int cardsFound = 0;
+		while (found != NULL) {//Gets all the specified card from the user hand
+			
+			found = lookForCard(rank, &players[pickedPlayer], &players[player]);
+			if (found != NULL) {
+				cardsFound++;
+				addCard(found, &players[player].headl, &players[player].headr);
 
-			//	Player asks for a card (Default by rank)----------(Extra credit specific card)
+			}
+		}
 
-			//	If someone else has that card
-			//	{
+		//This occurs when the user has to go fish
+		card *goFishCard = NULL;
+		if (!cardsFound) {
+			goFishCard = goFish(myDeck, &players[player]);
+		}//Tells the player how many cards they found form the user
+		else {
+			//Fixes the grammar of the sentences
+			if (cardsFound == 1)
+				printf("%s had %s 1 time\n", players[pickedPlayer].name, rank);
+			else
+				printf("%s had %s %d times\n", players[pickedPlayer].name, rank, cardsFound);
+		}
 
-			//		Player that was asked gives card(Default all of them that match)----------(Extra credit, just one)
+		//Debug
+		printf("%s has cards:\n", players[pickedPlayer].name);
+		printCards(players[pickedPlayer].headl);
+		printf("%s has cards:\n", players[player].name);
+		printCards(players[player].headl);
 
-			//	}
-			//	else card is wrong
-			//	{
-
-			//		Player picks from pile of cards
-
-			//		If card from pile is not the card the player asked for ----------(This does not happen with extra credit)
-			//		{
-			//			moves to next player;
-			//		}
-			//	}
-
-			//	Game checks if player got match (Four default)----------(Extra credit 2)
-
-			//Moves to next player by incrementing and going back to player one if it's their turn again
+		//Moves to next player by incrementing and going back to player one if it's their turn again
+		if (!cardsFound && (strcmp(goFishCard->value, rank) != 0)) {
 			player++;
+			repeatTurns = 0;
+		}//Do not ask if they want to continue
+		else
+			repeatTurns = 1;
+
+		//Can't exceed the player amount
 		if (player > playerAmount - 1)//Arrays start with zero, thus I substract one
 			player = 0;
 	}
-
 }
