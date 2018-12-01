@@ -264,7 +264,9 @@ void checkMatch(player *current, char rank[3], int matchNum)
 			//When the amount of matches meets the requirements for the function
 			if (match == matchNum) {
 				addPoint(current);
+				printf("----------------------------------------------------------------\n");
 				printf("%s got a match of %s\n", current->name, rank);
+				printf("----------------------------------------------------------------\n");
 
 				//Removes cards from the hand
 				card *found = current->headl;
@@ -449,7 +451,27 @@ int main(void)
 
 	//Creates the players
 	//Players get cards in hand (Default 7)----------(Extra credit more less cards, with more players)
-	int playerAmount = 2;
+	int playerAmount = 0;
+
+	//Asks how many players there will be until they give a valid response
+	while ((playerAmount < 2) || (playerAmount > 10))
+	{
+		printf("How many players are playing? (2-10): ");
+		scanf("%d", &playerAmount);
+
+		//checks if input was valid
+		if ((playerAmount < 2) || (playerAmount > 10))
+			printf("Invalid entry.\n");
+		scanf("%*c"); //deletes newline
+	}
+
+	int cardsDealt;
+	//determines how many cards to deal
+	if (playerAmount > 4)
+		cardsDealt = 5;
+	else
+		cardsDealt = 7;
+
 	char playerName[50];
 
 	//Creates an array of players
@@ -482,7 +504,7 @@ int main(void)
 	//Prints the players' cards
 	for (int i = 0; i < playerAmount; i++) {
 		//Gives them cards
-		getCards(&players[i], myDeck, 7);
+		getCards(&players[i], myDeck, cardsDealt);
 
 		//Debug to print their hand
 		printf("%s has cards:\n", players[i].name);
