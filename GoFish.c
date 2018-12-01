@@ -207,6 +207,48 @@ void addPoint(player *scorer)
 	(scorer->points)++;
 }
 
+//Checks if player has the specified card
+card *lookForCard(char rank[], player *playerCheck) {
+
+	card *returnMe = NULL;
+
+	card *indexer = playerCheck->headl;
+	//Loops through all the cards in hand
+	while (indexer != NULL) {
+		if (strcmp(indexer->value, rank) == 0) {
+
+			//When there is only one card in the players hand
+			if ((playerCheck->headl == indexer) && (playerCheck->headr == indexer)) {
+				returnMe = playerCheck->headl;
+				playerCheck->headl = NULL;
+			}//When the card that mathced is headl
+			else if (playerCheck->headl == indexer) {
+				returnMe = playerCheck->headl;
+				playerCheck->headl->next->previous = NULL;
+				playerCheck->headl = playerCheck->headl->next;
+			}//When the card that mathced is headr
+			else if (playerCheck->headr == indexer) {
+				returnMe = playerCheck->headr;
+				playerCheck->headr->previous->next = NULL;
+				playerCheck->headr = playerCheck->headr->previous;
+			}//When the card is simply in the middle of cards
+			else {
+				indexer->next->previous = indexer->previous;
+				indexer->previous->next = indexer->next;
+				returnMe = indexer;
+
+			}
+
+			returnMe->next = NULL;
+			returnMe->previous = NULL;
+			return returnMe;
+		}
+		//Goes to next card in linked list
+		indexer = indexer->next;
+	}
+	return returnMe;
+}
+
 //Checks for a match
 void checkMatch(player *current, char rank[3], int matchNum)
 {
@@ -227,7 +269,7 @@ void checkMatch(player *current, char rank[3], int matchNum)
 				//Removes cards from the hand
 				card *found = current->headl;
 				while (found != NULL) {//Gets all the specified card from the user hand
-					found = lookForCard(rank, &current);
+					found = lookForCard(rank, current);
 				}
 
 				return;
@@ -322,49 +364,6 @@ card *goFish(deck *myDeck, player *giveCard) {
 	//Returns the card that was added to the players hand
 	return giveCard->headr;
 }
-
-//Checks if player has the specified card
-card *lookForCard(char rank[], player *playerCheck) {
-
-	card *returnMe = NULL;
-
-	card *indexer = playerCheck->headl;
-	//Loops through all the cards in hand
-	while (indexer != NULL) {
-		if (strcmp(indexer->value, rank) == 0) {
-
-			//When there is only one card in the players hand
-			if ((playerCheck->headl == indexer) && (playerCheck->headr == indexer)) {
-				returnMe = playerCheck->headl;
-				playerCheck->headl = NULL;
-			}//When the card that mathced is headl
-			else if (playerCheck->headl == indexer) {
-				returnMe = playerCheck->headl;
-				playerCheck->headl->next->previous = NULL;
-				playerCheck->headl = playerCheck->headl->next;
-			}//When the card that mathced is headr
-			else if (playerCheck->headr == indexer) {
-				returnMe = playerCheck->headr;
-				playerCheck->headr->previous->next = NULL;
-				playerCheck->headr = playerCheck->headr->previous;
-			}//When the card is simply in the middle of cards
-			else {
-				indexer->next->previous = indexer->previous;
-				indexer->previous->next = indexer->next;
-				returnMe = indexer;
-
-			}
-
-			returnMe->next = NULL;
-			returnMe->previous = NULL;
-			return returnMe;
-		}
-		//Goes to next card in linked list
-		indexer = indexer->next;
-	}
-	return returnMe;
-}
-
 
 //Checks which player won
 void getWinners(player players[], int size)
