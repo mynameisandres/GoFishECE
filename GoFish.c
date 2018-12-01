@@ -142,7 +142,7 @@ void shuffle(deck *myDeck) {
 //Initializes a deck
 void initDeck(deck *myDeck) {
 
-	myDeck->deckSize = 52;
+	myDeck->deckSize = 16;
 	myDeck->headl = NULL; //no cards
 	myDeck->headr = NULL; //no cards
 
@@ -201,6 +201,34 @@ card *removeCard(deck *myDeck) {
 	return endCard;
 }
 
+//Adds a point to a player's score
+void addPoint(player *scorer)
+{
+	(scorer->points)++;
+}
+
+//Checks for a match
+void checkMatch(player *current, char rank[3], int matchNum)
+{
+	int match = 1;
+
+	card *indexer = current->headl;
+	//Loops through the cards in the users hand
+	while (indexer != NULL) {
+
+		if (strcmp(indexer->value, rank) == 0) {
+			match++;
+
+			//When the amount of matches meets the requirements for the function
+			if (match == matchNum) {
+				addPoint(current);
+				printf("%s got a match of %s\n", current->name, rank);
+				return;
+			}
+		}
+	}
+}
+
 //Draws a specified number of cards from a deck and puts them in a player's hand
 void getCards(player *user, deck *myDeck, int amount) {
 
@@ -208,6 +236,7 @@ void getCards(player *user, deck *myDeck, int amount) {
 	for (int i = 0; i < amount; i++) {
 		cardHolder = removeCard(myDeck); //takes a card from the end of the deck
 		addCard(cardHolder, &(user->headl), &(user->headr)); //adds the removed card to the player's hand
+		checkMatch(user, cardHolder->value, 4);
 	}
 
 }
@@ -273,37 +302,6 @@ void continueCheck() {
 	//ends the program if they don't hit C
 	if (answer != 'C' && answer != 'c')
 		exit(0);
-}
-
-//Adds a point to a player's score
-void addPoint(player *scorer)
-{
-	(scorer->points)++;
-}
-
-//Checks for a match
-int checkMatch(player *current, char rank[3], int matchNum)
-{
-	int match = 1;
-
-	card *indexer = current->headl;
-	//Loops through the cards in the users hand
-	while (indexer != NULL) {
-	
-		if (strcmp(indexer->value, rank) == 0) {
-			match++;
-
-			//When the amount of matches meets the requirements for the function
-			if (match == matchNum) {
-				addPoint(current);
-				return 1;
-			}
-		}
-	}
-
-	//Cards was not found
-	return 0;
-
 }
 
 //Grabs a card from the deck
@@ -538,7 +536,7 @@ int main(void)
 			if (found != NULL) {
 				cardsFound++;
 				addCard(found, &players[player].headl, &players[player].headr);
-
+				checkMatch(&players[player], found->value, 4);
 			}
 		}
 
@@ -546,6 +544,7 @@ int main(void)
 		card *goFishCard = NULL;
 		if (!cardsFound) {
 			goFishCard = goFish(myDeck, &players[player]);
+			checkMatch(&players[player], goFishCard->value, 4);
 		}//Tells the player how many cards they found form the user
 		else {
 			//Fixes the grammar of the sentences
