@@ -224,6 +224,12 @@ void checkMatch(player *current, char rank[3], int matchNum)
 				addPoint(current);
 				printf("%s got a match of %s\n", current->name, rank);
 
+				//Removes cards from the hand
+				card *found = current->headl;
+				while (found != NULL) {//Gets all the specified card from the user hand
+					found = lookForCard(rank, &current);
+				}
+
 				return;
 			}
 		}
