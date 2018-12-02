@@ -23,10 +23,10 @@ Description of the Program: Plays a game of Go Fish
 #include <time.h>
 
 //To be able to prints the symbols
-#define SPADE   "S_"
-#define CLUB    "C_"
-#define HEART   "H_"
-#define DIAMOND "D_"
+#define SPADE   "(S)"
+#define CLUB    "(C)"
+#define HEART   "(H)"
+#define DIAMOND "(D)"
 
 //adds structure for card
 typedef struct card_s
@@ -131,7 +131,7 @@ void shuffle(deck *myDeck) {
 
 	//Randomly swaps the values in the double linked list as many times as user wants
 	int first, second;
-	for (int i = 0; i < 100000; i++) {
+	for (int i = 0; i < 10000; i++) {
 		//gets two random indexes
 		first = rand_gen(myDeck->deckSize);
 		second = rand_gen(myDeck->deckSize);
@@ -164,26 +164,94 @@ void initPlayer(player *user, char *playerName) {
 }
 
 //Prints all the cards in a linked list
-void printCards(card *cards) {
-
+void printCards(card *cards)
+{
+	//declares variables
+	char symbols[52][6];
+	char currentSymbols[6];
+	int numCards = 0;
 	card *indexer = cards;
-	while (indexer != NULL) { //loops until no card
 
-		//Checks what suit to print
+	//gets the symbols(rank & suit) from all the cards and counts how many cards there are
+	while (indexer != NULL)
+	{
+		//sets currentSymbols variable to an empty string
+		strcpy(currentSymbols, "");
+
+		//concatenates the rank to the string
+		strcat(currentSymbols, indexer->value);
+
+		//determines which suit to concatenate
 		if (strcmp(indexer->suit, "diamonds") == 0)
-			printf("%s", DIAMOND);
+			strcat(currentSymbols, DIAMOND);
 		else if (strcmp(indexer->suit, "clubs") == 0)
-			printf("%s", CLUB);
+			strcat(currentSymbols, CLUB);
 		else if (strcmp(indexer->suit, "spades") == 0)
-			printf("%s", SPADE);
+			strcat(currentSymbols, SPADE);
 		else
-			printf("%s", HEART);
+			strcat(currentSymbols, HEART);
 
-		//Prints the card value next to suit
-		printf("%s ", indexer->value);
+		//concatenates a space if the rank was not 10
+		if (strcmp(indexer->value, "10") != 0)
+		{
+			strcat(currentSymbols, " ");
+		}
+
+		//stores the current card's symbols into the multidimensional string array
+		strcpy(symbols[numCards], currentSymbols);
 
 		//Goes to next card in linked list
 		indexer = indexer->next;
+
+		//increments the number of cards
+		numCards++;
+	}
+
+	if (numCards == 0) {
+		printf("No cards\n");
+		return;
+	}
+
+	//prints the tops of the ascii cards
+	for (int i = 0; i < numCards; i++)
+	{
+		printf("---------");
+		printf("   ");
+	}
+	printf("\n");
+
+	//prints the symbols in the top left corner of the ascii card
+	for (int i = 0; i < numCards; i++)
+	{
+		printf("|%s  |", symbols[i]);
+		printf("   ");
+	}
+	printf("\n");
+
+	//prints the middles of the ascii cards
+	for (int n = 0; n < 3; n++)
+	{
+		for (int i = 0; i < numCards; i++)
+		{
+			printf("|       |");
+			printf("   ");
+		}
+		printf("\n");
+	}
+
+	//prints the symbols in the top left corner of the ascii card
+	for (int i = 0; i < numCards; i++)
+	{
+		printf("|  %s|", symbols[i]);
+		printf("   ");
+	}
+	printf("\n");
+
+	//prints the bottomss of the ascii cards
+	for (int i = 0; i < numCards; i++)
+	{
+		printf("---------");
+		printf("   ");
 	}
 	printf("\n");
 }
@@ -193,9 +261,17 @@ card *removeCard(deck *myDeck) {
 
 	//Removes and grabs card from deck
 	card *endCard = myDeck->headr; //obtains the last card in the deck
-	myDeck->headr->previous->next = NULL; //the second-to-last card points to null
-	myDeck->headr = myDeck->headr->previous; //the last card is the second-to-last card
-	endCard->previous = NULL; // the card that was taken now has no card before it
+
+	//If only one card in deck
+	if (myDeck->deckSize == 1) {
+		myDeck->headl = NULL;
+		myDeck->headr = NULL;
+	}//Otherwise
+	else {
+		myDeck->headr->previous->next = NULL; //the second-to-last card points to null
+		myDeck->headr = myDeck->headr->previous; //the last card is the second-to-last card
+		endCard->previous = NULL; // the card that was taken now has no card before it
+	}
 
 	//Decrements decksize
 	myDeck->deckSize--;
@@ -224,6 +300,7 @@ card *lookForCard(char rank[], player *playerCheck) {
 			if ((playerCheck->headl == indexer) && (playerCheck->headr == indexer)) {
 				returnMe = playerCheck->headl;
 				playerCheck->headl = NULL;
+				playerCheck->headr = NULL;
 			}//When the card that mathced is headl
 			else if (playerCheck->headl == indexer) {
 				returnMe = playerCheck->headl;
@@ -289,6 +366,9 @@ void getCards(player *user, deck *myDeck, int amount) {
 
 	card *cardHolder = NULL; //represents the card drawn from the deck
 	for (int i = 0; i < amount; i++) {
+		//If deck is empty
+		if (myDeck->headl == NULL)
+			break;
 		cardHolder = removeCard(myDeck); //takes a card from the end of the deck
 		addCard(cardHolder, &(user->headl), &(user->headr)); //adds the removed card to the player's hand
 		checkMatch(user, cardHolder->value, 4);
@@ -402,9 +482,24 @@ void getWinners(player players[], int size)
 	//Prints the winner
 	for (int i = 0; i < size; i++) {
 		if (players[i].points == maxPoints) {
-			printf("\t%s\n", players[i].name);
+			printf("\t%s with match count of %d\n", players[i].name, players[i].points);
 		}
 	}
+}
+
+//Checks which player won
+int allHandsEmpty(player players[], int size)
+{
+	//Loops through all the players
+	for (int i = 1; i < size; i++) {
+
+		//Returns false if any of the players has non-empty hand
+		if (players[i].headl != NULL)
+			return 0;
+	}
+	//ALl players had empty hands
+	return 1;
+
 }
 
 int findIndexOfPlayer(player *players, char **playerName, int playerAmount) {
@@ -437,7 +532,7 @@ int main(void)
 
 	//Creates file
 	FILE *inp;
-	inp = fopen("cards.txt", "r");
+	inp = fopen("cards2.txt", "r");
 
 	//checks if file exists
 	if (inp == NULL)
@@ -449,14 +544,8 @@ int main(void)
 	//Function to read file
 	readFile(inp, myDeck);
 
-	printf("Unshuffled deck is:\n");
-	printCards(myDeck->headl);
-
-	//Shuffles the deck
+	//Shuffles Deck
 	shuffle(myDeck);
-
-	printf("Shuffled deck is:\n");
-	printCards(myDeck->headl);
 
 	//Variations
 
@@ -497,6 +586,7 @@ int main(void)
 	//Makes a player struct for each player
 	int AIIndexer = 1;
 	for (int i = 0; i < playerAmount; i++) {
+		
 		//asks user for name
 		printf("Player %d enter your name(Enter AI for AI): ", i + 1); //+ 1 necessary otherwise it will start at Player 0
 		scanf("%s", playerName);
@@ -547,9 +637,6 @@ int main(void)
 	int repeatTurns = 0;
 	while (!gameOver(players, playerAmount))
 	{
-		//ask user if they want to continue the game
-		//if(!repeatTurns)
-		//	continueCheck();
 
 		//Option of picking player when more than 2
 		if (playerAmount > 2) {
@@ -559,7 +646,8 @@ int main(void)
 			if (players[player].isAI) {
 				
 				//Keeps picking until the picked is not the same as the player
-				while(pickedPlayer != player)
+				pickedPlayer = player;
+				while(pickedPlayer == player)
 					pickedPlayer = rand_gen(playerAmount);
 
 			}//Keeps asking the player for a card until they give a card they have in hand
@@ -606,7 +694,7 @@ int main(void)
 		int cardsFound = 0;
 		while (found != NULL) {//Gets all the specified card from the user hand
 			
-			found = lookForCard(rank, &players[pickedPlayer]);
+			found = lookForCard(askedCard->value , &players[pickedPlayer]);
 			if (found != NULL) {
 				cardsFound++;
 				addCard(found, &players[player].headl, &players[player].headr);
@@ -623,19 +711,28 @@ int main(void)
 		else {
 			//Fixes the grammar of the sentences
 			if (cardsFound == 1)
-				printf("%s had %s 1 time\n", players[pickedPlayer].name, rank);
+				printf("%s had %s 1 time\n", players[pickedPlayer].name, askedCard->value);
 			else
-				printf("%s had %s %d times\n", players[pickedPlayer].name, rank, cardsFound);
+				printf("%s had %s %d times\n", players[pickedPlayer].name, askedCard->value, cardsFound);
 		}
 
-		//Debug
-		printf("%s has cards:\n", players[pickedPlayer].name);
-		printCards(players[pickedPlayer].headl);
-		printf("%s has cards:\n", players[player].name);
-		printCards(players[player].headl);
+		//Adds cards to hand if the opponents hand are empty
+		if (players[player].headl == NULL)
+			getCards(&players[player], myDeck, cardsDealt);
+
+		//Adds cards to hand if the players hand are empty
+		if (players[pickedPlayer].headl == NULL)
+			getCards(&players[pickedPlayer], myDeck, cardsDealt);
+
+		//Prints the players' cards
+		for (int i = 0; i < playerAmount; i++) {
+			//Debug to print their hand
+			printf("%s has cards:\n", players[i].name);
+			printCards(players[i].headl);
+		}
 
 		//Moves to next player by incrementing and going back to player one if it's their turn again
-		if (!cardsFound && (strcmp(goFishCard->value, rank) != 0)) {
+		if ((!cardsFound && (goFishCard == NULL || (strcmp(goFishCard->value, askedCard->value) != 0)))) {
 			player++;
 			repeatTurns = 0;
 		}//Do not ask if they want to continue
@@ -646,4 +743,8 @@ int main(void)
 		if (player > playerAmount - 1)//Arrays start with zero, thus I substract one
 			player = 0;
 	}
+
+	//States who won
+	getWinners(players, playerAmount);
+
 }
