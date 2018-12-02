@@ -67,6 +67,9 @@ typedef struct player_s {
 	//Indicates win status of player
 	int winStatus;
 
+	//Indicates if is AI
+	int isAI;
+
 } player;
 
 //--------------------------------------------------------------------------------------------------------DECK STUFF
@@ -157,7 +160,7 @@ void initPlayer(player *user, char *playerName) {
 	user->headr = NULL; //no cards
 	user->points = 0; //no points
 	user->winStatus = 0; //not a winner
-
+	user->isAI = 0; //Starts with AI being zero
 }
 
 //Prints all the cards in a linked list
@@ -404,6 +407,20 @@ void getWinners(player players[], int size)
 	}
 }
 
+int findIndexOfPlayer(player *players, char **playerName, int playerAmount) {
+
+	//Loops through players and check if name matches
+	for (int i = 0; i < playerAmount; i++) {
+		if (strcmp(players[i].name, *playerName) == 0)
+			return i;
+	}
+
+	//If player was not found
+	*playerName = NULL;
+	return 0;
+
+
+}
 
 //-------------------------------------------------------------------------------------------------GAMEPLAY
 
@@ -478,14 +495,24 @@ int main(void)
 	player *players = malloc(sizeof(player) * playerAmount);
 
 	//Makes a player struct for each player
+	int AIIndexer = 1;
 	for (int i = 0; i < playerAmount; i++) {
 		//asks user for name
-		printf("Player %d enter your name: ", i + 1); //+ 1 necessary otherwise it will start at Player 0
+		printf("Player %d enter your name(Enter AI for AI): ", i + 1); //+ 1 necessary otherwise it will start at Player 0
 		scanf("%s", playerName);
 
-		//Initializes the player
-		initPlayer(&players[i], playerName);
+		//Initializes the player as an AI
+		if (strcmp(playerName, "AI") == 0) {
+			sprintf(playerName, "%s%d", playerName, AIIndexer);
+			AIIndexer++;
+			initPlayer(&players[i], playerName);
+			players[i].isAI = 1;
+		}//Not an AI
+		else {
+			initPlayer(&players[i], playerName);
+		}
 
+		
 	}
 
 	//Greets the players
@@ -521,17 +548,30 @@ int main(void)
 	while (!gameOver(players, playerAmount))
 	{
 		//ask user if they want to continue the game
-		if(!repeatTurns)
-			continueCheck();
+		//if(!repeatTurns)
+		//	continueCheck();
 
 		//Option of picking player when more than 2
 		if (playerAmount > 2) {
-			//Makes sure while loops runs at least once
-			pickedPlayer = player + 1;
-			//Keeps asking user to pick a player until they pick a valid one
-			while (pickedPlayer == (player + 1)) {
-				printf("Player %d, pick a player:\n", player + 1); //Need to + 1 because indexing starts with 0
-				scanf("%d", &pickedPlayer);
+
+			//Name is AI simply gets first card in hand
+			card *askedCard = NULL;
+			if (players[player].isAI) {
+				
+				//Keeps picking until the picked is not the same as the player
+				while(pickedPlayer != player)
+					pickedPlayer = rand_gen(playerAmount);
+
+			}//Keeps asking the player for a card until they give a card they have in hand
+			else {
+
+				char *playerName = NULL;
+				//Keeps asking user to pick a player until they pick a valid one
+				while (playerName == NULL) {
+					printf("%d, pick a player:\n", player + 1); //Need to + 1 because indexing starts with 0
+					scanf("%s", playerName);
+					pickedPlayer = findIndexOfPlayer(players, &playerName, playerAmount);
+				}
 			}
 		}
 		//If there are just two players
@@ -539,20 +579,25 @@ int main(void)
 			pickedPlayer = !player;
 		}
 
-		//Keeps asking the player for a card until they give a card they have in hand
+		//Name is AI simply gets first card in hand
 		card *askedCard = NULL;
-		while (askedCard == NULL) {
+		if (players[player].isAI) {
+			askedCard = players[player].headl;
+		}//Keeps asking the player for a card until they give a card they have in hand
+		else {
+			while (askedCard == NULL) {
 
-			//Gets rank from the player and checks if they have the card in there hand
-			printf("%s what rank do you want to ask %s for?\n", players[player].name, players[pickedPlayer].name);//Need to + 1 because indexing starts with 0
-			scanf("%2s", rank);
-			askedCard = lookForCard(rank, &players[player]);
+				//Gets rank from the player and checks if they have the card in there hand
+				printf("%s what rank do you want to ask %s for?\n", players[player].name, players[pickedPlayer].name);//Need to + 1 because indexing starts with 0
+				scanf("%2s", rank);
+				askedCard = lookForCard(rank, &players[player]);
 
-			//Adds card back to the users hand if they have it
-			if (askedCard != NULL)
-				addCard(askedCard, &players[player].headl, &players[player].headr);
-			else
-				printf("You do not have that card\n");
+				//Adds card back to the users hand if they have it
+				if (askedCard != NULL)
+					addCard(askedCard, &players[player].headl, &players[player].headr);
+				else
+					printf("You do not have that card\n");
+			}
 		}
 
 
