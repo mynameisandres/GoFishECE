@@ -450,6 +450,10 @@ void continueCheck() {
 //Grabs a card from the deck
 card *goFish(deck *myDeck, player *giveCard) {
 
+	//Returns no card if deck is empty
+	if (myDeck->headl == NULL)
+		return NULL;
+
 	//Does the go fish
 	printf("\n><(((('> ><(((('> ><(((('>\n");
 	printf("><(((('>          ><(((('>\n");
@@ -734,7 +738,9 @@ int main(void)
 			card *goFishCard = NULL;
 			if (!cardsFound) {
 				goFishCard = goFish(myDeck, &players[player]);
-				checkMatch(&players[player], goFishCard->value, 4);
+				//Checks if card is a match when the go fished card is not NULL
+				if(goFishCard != NULL)
+					checkMatch(&players[player], goFishCard->value, 4);
 			}//Tells the player how many cards they found form the user
 			else {
 				//Fixes the grammar of the sentences
