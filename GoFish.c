@@ -653,120 +653,125 @@ int main(void)
 		//Asks the user if they want to continue. COMMENT OUT IF FEATURE UNWANTED
 		//continueCheck();
 
-		//Option of picking player when more than 2
-		if (playerAmount > 2) {
+		//Let's player go with the have cards
+		if(players[player].headl != NULL){
+
+			//Option of picking player when more than 2
+			if (playerAmount > 2) {
+
+				//Name is AI simply gets first card in hand
+				card *askedCard = NULL;
+				if (players[player].isAI) {
+
+					printf("\n%s, pick a player to ask cards from:\n", players[player].name);
+					//Keeps picking until the picked is not the same as the player
+					pickedPlayer = player;
+					while (pickedPlayer == player)
+						pickedPlayer = rand_gen(playerAmount);
+
+				}//Keeps asking the player for a card until they give a card they have in hand
+				else {
+
+					char pickedPlayerName[50] = "";
+					int pickedSelf = 0;
+					//Keeps asking user to pick a player until they pick a valid one
+					while (((pickedPlayer = findIndexOfPlayer(players, pickedPlayerName, playerAmount)) == -1) || pickedSelf) {
+						printf("\n%s, pick a player to ask cards from:\n", players[player].name);
+						scanf("%s", pickedPlayerName);
+						pickedSelf = 0;
+						//Check if they picked themselves
+						if ((strcmp(players[player].name, pickedPlayerName) == 0)) {
+							//Cannot choose themselves
+							pickedSelf = 1;
+							printf("Cannot pick your self\n");
+						}
+					}
+				}
+				printf("%s chose %s\n", players[player].name, players[pickedPlayer].name);//Need to + 1 because indexing starts with 0
+			}
+			//If there are just two players
+			else {
+				pickedPlayer = !player;
+			}
 
 			//Name is AI simply gets first card in hand
 			card *askedCard = NULL;
 			if (players[player].isAI) {
-
-				printf("\n%s, pick a player to ask cards from:\n", players[player].name);
-				//Keeps picking until the picked is not the same as the player
-				pickedPlayer = player;
-				while (pickedPlayer == player)
-					pickedPlayer = rand_gen(playerAmount);
-
+				printf("\n%s, what rank do you want to ask %s for?\n", players[player].name, players[pickedPlayer].name);//Need to + 1 because indexing starts with 0
+				askedCard = players[player].headl;
 			}//Keeps asking the player for a card until they give a card they have in hand
 			else {
+				while (askedCard == NULL) {
 
-				char pickedPlayerName[50] = "";
-				int pickedSelf = 0;
-				//Keeps asking user to pick a player until they pick a valid one
-				while (((pickedPlayer = findIndexOfPlayer(players, pickedPlayerName, playerAmount)) == -1) || pickedSelf) {
-					printf("\n%s, pick a player to ask cards from:\n", players[player].name); 
-					scanf("%s", pickedPlayerName);
-					pickedSelf = 0;
-					//Check if they picked themselves
-					if ((strcmp(players[player].name, pickedPlayerName) == 0)) {
-						//Cannot choose themselves
-						pickedSelf = 1;
-						printf("Cannot pick your self\n");
-					}
+					//Gets rank from the player and checks if they have the card in there hand
+					printf("\n%s, what rank do you want to ask %s for?\n", players[player].name, players[pickedPlayer].name);//Need to + 1 because indexing starts with 0
+					scanf("%2s", rank);
+					askedCard = lookForCard(rank, &players[player]);
+
+					//Adds card back to the users hand if they have it
+					if (askedCard != NULL)
+						addCard(askedCard, &players[player].headl, &players[player].headr);
+					else
+						printf("You do not have that card\n");
 				}
 			}
-			printf("%s chose %s\n", players[player].name, players[pickedPlayer].name);//Need to + 1 because indexing starts with 0
-		}
-		//If there are just two players
-		else {
-			pickedPlayer = !player;
-		}
+			printf("%s picked %s\n", players[player].name, askedCard->value);//Need to + 1 because indexing starts with 0
 
-		//Name is AI simply gets first card in hand
-		card *askedCard = NULL;
-		if (players[player].isAI) {
-			printf("\n%s, what rank do you want to ask %s for?\n", players[player].name, players[pickedPlayer].name);//Need to + 1 because indexing starts with 0
-			askedCard = players[player].headl;
-		}//Keeps asking the player for a card until they give a card they have in hand
-		else {
-			while (askedCard == NULL) {
+			//Run while loop at least once, unless user hand is empty(Might have to fix this later)
+			card *found = players[player].headl;
+			int cardsFound = 0;
+			while (found != NULL) {//Gets all the specified card from the user hand
 
-				//Gets rank from the player and checks if they have the card in there hand
-				printf("\n%s, what rank do you want to ask %s for?\n", players[player].name, players[pickedPlayer].name);//Need to + 1 because indexing starts with 0
-				scanf("%2s", rank);
-				askedCard = lookForCard(rank, &players[player]);
+				found = lookForCard(askedCard->value, &players[pickedPlayer]);
+				if (found != NULL) {
+					cardsFound++;
+					addCard(found, &players[player].headl, &players[player].headr);
+					checkMatch(&players[player], found->value, 4);
+				}
+			}
 
-				//Adds card back to the users hand if they have it
-				if (askedCard != NULL)
-					addCard(askedCard, &players[player].headl, &players[player].headr);
+			//This occurs when the user has to go fish
+			card *goFishCard = NULL;
+			if (!cardsFound) {
+				goFishCard = goFish(myDeck, &players[player]);
+				checkMatch(&players[player], goFishCard->value, 4);
+			}//Tells the player how many cards they found form the user
+			else {
+				//Fixes the grammar of the sentences
+				if (cardsFound == 1)
+					printf("%s had %s, 1 time.\n", players[pickedPlayer].name, askedCard->value);
 				else
-					printf("You do not have that card\n");
+					printf("%s had %s, %d times.\n", players[pickedPlayer].name, askedCard->value, cardsFound);
 			}
-		}
-		printf("%s picked %s\n", players[player].name, askedCard->value);//Need to + 1 because indexing starts with 0
 
-		//Run while loop at least once, unless user hand is empty(Might have to fix this later)
-		card *found = players[player].headl;
-		int cardsFound = 0;
-		while (found != NULL) {//Gets all the specified card from the user hand
+			//Adds cards to hand if the opponents hand are empty
+			if (players[player].headl == NULL)
+				getCards(&players[player], myDeck, cardsDealt);
 
-			found = lookForCard(askedCard->value, &players[pickedPlayer]);
-			if (found != NULL) {
-				cardsFound++;
-				addCard(found, &players[player].headl, &players[player].headr);
-				checkMatch(&players[player], found->value, 4);
+			//Adds cards to hand if the players hand are empty
+			if (players[pickedPlayer].headl == NULL)
+				getCards(&players[pickedPlayer], myDeck, cardsDealt);
+
+			//prints newline to mark a new round
+			printf("\n|-------------------------------------------------------------------------------------------------------|\n");
+
+			//Prints the players' cards
+			for (int i = 0; i < playerAmount; i++) {
+				//Debug to print their hand
+				printf("%s has cards:\n", players[i].name);
+				printCards(players[i].headl);
 			}
-		}
 
-		//This occurs when the user has to go fish
-		card *goFishCard = NULL;
-		if (!cardsFound) {
-			goFishCard = goFish(myDeck, &players[player]);
-			checkMatch(&players[player], goFishCard->value, 4);
-		}//Tells the player how many cards they found form the user
-		else {
-			//Fixes the grammar of the sentences
-			if (cardsFound == 1)
-				printf("%s had %s, 1 time.\n", players[pickedPlayer].name, askedCard->value);
+			//Moves to next player by incrementing and going back to player one if it's their turn again
+			if ((!cardsFound && (goFishCard == NULL || (strcmp(goFishCard->value, askedCard->value) != 0)))) {
+				player++;
+				repeatTurns = 0;
+			}//Do not ask if they want to continue
 			else
-				printf("%s had %s, %d times.\n", players[pickedPlayer].name, askedCard->value, cardsFound);
-		}
-
-		//Adds cards to hand if the opponents hand are empty
-		if (players[player].headl == NULL)
-			getCards(&players[player], myDeck, cardsDealt);
-
-		//Adds cards to hand if the players hand are empty
-		if (players[pickedPlayer].headl == NULL)
-			getCards(&players[pickedPlayer], myDeck, cardsDealt);
-
-		//prints newline to mark a new round
-		printf("\n|-------------------------------------------------------------------------------------------------------|\n");
-
-		//Prints the players' cards
-		for (int i = 0; i < playerAmount; i++) {
-			//Debug to print their hand
-			printf("%s has cards:\n", players[i].name);
-			printCards(players[i].headl);
-		}
-
-		//Moves to next player by incrementing and going back to player one if it's their turn again
-		if ((!cardsFound && (goFishCard == NULL || (strcmp(goFishCard->value, askedCard->value) != 0)))) {
+				repeatTurns = 1;
+		}else {
 			player++;
-			repeatTurns = 0;
-		}//Do not ask if they want to continue
-		else
-			repeatTurns = 1;
-
+		}
 		//Can't exceed the player amount
 		if (player > playerAmount - 1)//Arrays start with zero, thus I substract one
 			player = 0;
