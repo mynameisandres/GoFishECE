@@ -310,12 +310,12 @@ card *lookForCard(char rank[], player *playerCheck) {
 				returnMe = playerCheck->headl;
 				playerCheck->headl = NULL;
 				playerCheck->headr = NULL;
-			}//When the card that mathced is headl
+			}//When the card that matched is headl
 			else if (playerCheck->headl == indexer) {
 				returnMe = playerCheck->headl;
 				playerCheck->headl->next->previous = NULL;
 				playerCheck->headl = playerCheck->headl->next;
-			}//When the card that mathced is headr
+			}//When the card that matched is headr
 			else if (playerCheck->headr == indexer) {
 				returnMe = playerCheck->headr;
 				playerCheck->headr->previous->next = NULL;
@@ -364,7 +364,8 @@ void checkMatch(player *current, char rank[3], int matchNum, deck *matchDeck)
 				printf("$$ |$$$/ $$ |$$ |  $$ |   $$ |  $$ \\__/  |$$ |  $$ | __ \n");
 				printf("$$ | $/  $$ |$$ |  $$ |   $$ |  $$    $$/ $$ |  $$ |/  |\n");
 				printf("$$/      $$/ $$/   $$/    $$/    $$$$$$/  $$/   $$/ $$/ \n");
-				
+
+				//prints who got what match
 				printf("\n%s got a match of %s\n", current->name, rank);
 
 				//Removes cards from the hand
@@ -391,7 +392,7 @@ void getCards(player *user, deck *myDeck, int amount, deck *matchDeck) {
 			break;
 		cardHolder = removeCard(myDeck); //takes a card from the end of the deck
 		addCard(cardHolder, &(user->headl), &(user->headr)); //adds the removed card to the player's hand
-		checkMatch(user, cardHolder->value, 4, matchDeck);
+		checkMatch(user, cardHolder->value, 4, matchDeck); //checks if the new card completed a match
 	}
 
 }
@@ -534,7 +535,7 @@ int allHandsEmpty(player players[], int size)
 		if (players[i].headl != NULL)
 			return 0;
 	}
-	//ALl players had empty hands
+	//All players had empty hands
 	return 1;
 
 }
@@ -683,7 +684,7 @@ int main(void)
 		//continueCheck();
 
 		//Let's player go with the have cards
-		if(players[player].headl != NULL){
+		if (players[player].headl != NULL) {
 
 			//Option of picking player when more than 2
 			if (playerAmount > 2) {
@@ -712,11 +713,11 @@ int main(void)
 						if ((strcmp(players[player].name, pickedPlayerName) == 0)) {
 							//Cannot choose themselves
 							pickedSelf = 1;
-							printf("Cannot pick your self\n");
+							printf("Cannot pick yourself\n");
 						}
 					}
 				}
-				printf("%s chose %s\n", players[player].name, players[pickedPlayer].name);//Need to + 1 because indexing starts with 0
+				printf("%s chose %s\n", players[player].name, players[pickedPlayer].name);
 			}
 			//If there are just two players
 			else {
@@ -726,14 +727,14 @@ int main(void)
 			//Name is AI simply gets first card in hand
 			card *askedCard = NULL;
 			if (players[player].isAI) {
-				printf("\n%s, what rank do you want to ask %s for?\n", players[player].name, players[pickedPlayer].name);//Need to + 1 because indexing starts with 0
+				printf("\n%s, what rank do you want to ask %s for?\n", players[player].name, players[pickedPlayer].name);
 				askedCard = players[player].headl;
 			}//Keeps asking the player for a card until they give a card they have in hand
 			else {
 				while (askedCard == NULL) {
 
 					//Gets rank from the player and checks if they have the card in there hand
-					printf("\n%s, what rank do you want to ask %s for?\n", players[player].name, players[pickedPlayer].name);//Need to + 1 because indexing starts with 0
+					printf("\n%s, what rank do you want to ask %s for?\n", players[player].name, players[pickedPlayer].name);
 					scanf("%2s", rank);
 					askedCard = lookForCard(rank, &players[player]);
 
@@ -744,9 +745,9 @@ int main(void)
 						printf("You do not have that card\n");
 				}
 			}
-			printf("%s picked %s\n", players[player].name, askedCard->value);//Need to + 1 because indexing starts with 0
+			printf("%s picked %s\n", players[player].name, askedCard->value);
 
-			//Run while loop at least once, unless user hand is empty(Might have to fix this later)
+			//Run while loop at least once, unless user hand is empty
 			card *found = players[player].headl;
 			int cardsFound = 0;
 			while (found != NULL) {//Gets all the specified card from the user hand
@@ -764,7 +765,7 @@ int main(void)
 			if (!cardsFound) {
 				goFishCard = goFish(myDeck, &players[player], matchDeck);
 				//Checks if card is a match when the go fished card is not NULL
-				if(goFishCard != NULL)
+				if (goFishCard != NULL)
 					checkMatch(&players[player], goFishCard->value, 4, matchDeck);
 			}//Tells the player how many cards they found form the user
 			else {
@@ -800,7 +801,8 @@ int main(void)
 			}//Do not ask if they want to continue
 			else
 				repeatTurns = 1;
-		}else {
+		}
+		else {
 			player++;
 		}
 		//Can't exceed the player amount
