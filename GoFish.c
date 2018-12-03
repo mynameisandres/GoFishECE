@@ -763,7 +763,7 @@ int main(void)
 			}
 
 			//Moves to next player by incrementing and going back to player one if it's their turn again
-			if ((!cardsFound && (goFishCard == NULL || (strcmp(goFishCard->value, askedCard->value) != 0)))) {
+			if (((cardsFound == 0) && ((goFishCard == NULL) || (strcmp(goFishCard->value, askedCard->value) != 0)))) {
 				player++;
 				repeatTurns = 0;
 			}//Do not ask if they want to continue
