@@ -77,6 +77,15 @@ typedef struct player_s {
 //defines function that adds members to list
 void addCard(card *p, card **hl, card **hr)
 {
+
+	//Not add that does not exist
+	if (p == NULL)
+		return;
+
+	//Clears the pointers
+	p->next = NULL;
+	p->previous = NULL;
+
 	//If node is empty
 	if (*hr == NULL) {
 		*hl = p; //left head points to node
@@ -330,7 +339,7 @@ card *lookForCard(char rank[], player *playerCheck) {
 }
 
 //Checks for a match
-void checkMatch(player *current, char rank[3], int matchNum)
+void checkMatch(player *current, char rank[3], int matchNum, deck *matchDeck)
 {
 	int match = 0;
 
@@ -362,6 +371,7 @@ void checkMatch(player *current, char rank[3], int matchNum)
 				card *found = current->headl;
 				while (found != NULL) {//Gets all the specified card from the user hand
 					found = lookForCard(rank, current);
+					addCard(found, &matchDeck->headl, &matchDeck->headr);
 				}
 
 				return;
@@ -372,7 +382,7 @@ void checkMatch(player *current, char rank[3], int matchNum)
 }
 
 //Draws a specified number of cards from a deck and puts them in a player's hand
-void getCards(player *user, deck *myDeck, int amount) {
+void getCards(player *user, deck *myDeck, int amount, deck *matchDeck) {
 
 	card *cardHolder = NULL; //represents the card drawn from the deck
 	for (int i = 0; i < amount; i++) {
@@ -381,7 +391,7 @@ void getCards(player *user, deck *myDeck, int amount) {
 			break;
 		cardHolder = removeCard(myDeck); //takes a card from the end of the deck
 		addCard(cardHolder, &(user->headl), &(user->headr)); //adds the removed card to the player's hand
-		checkMatch(user, cardHolder->value, 4);
+		checkMatch(user, cardHolder->value, 4, matchDeck);
 	}
 
 }
@@ -448,7 +458,7 @@ void continueCheck() {
 }
 
 //Grabs a card from the deck
-card *goFish(deck *myDeck, player *giveCard) {
+card *goFish(deck *myDeck, player *giveCard, deck *matchDeck) {
 
 	//Returns no card if deck is empty
 	if (myDeck->headl == NULL)
@@ -460,7 +470,7 @@ card *goFish(deck *myDeck, player *giveCard) {
 	printf("~~~    Go fish, %s ~~~\n", giveCard->name);
 	printf("><(((('>          ><(((('>\n");
 	printf("><(((('> ><(((('> ><(((('>\n");
-	getCards(giveCard, myDeck, 1);
+	getCards(giveCard, myDeck, 1, matchDeck);
 
 	//Returns the card that was added to the players hand
 	return giveCard->headr;
@@ -542,6 +552,19 @@ int findIndexOfPlayer(player *players, char *playerName, int playerAmount) {
 
 }
 
+//Recursively free the matched deck
+//Does this in reverse
+void freeMatchDeckCards(card *aCard) {
+
+	//Exits recursive function
+	if (aCard == NULL)
+		return;
+
+	freeMatchDeckCards(aCard->next);
+
+	free(aCard);
+}
+
 //-------------------------------------------------------------------------------------------------GAMEPLAY
 
 //Holds the gameplay of the go fish game
@@ -551,9 +574,11 @@ int main(void)
 	//randomizes the seed for the random function
 	srand((int)time(NULL));
 
-	//Creates a deck
+	//Creates a deck and the deck to store the matched cards
 	deck *myDeck = malloc(sizeof(deck));
 	initDeck(myDeck);
+	deck *matchDeck = malloc(sizeof(deck));
+	initDeck(matchDeck);
 
 	//Creates file
 	FILE *inp;
@@ -638,7 +663,7 @@ int main(void)
 	//Prints the players' cards
 	for (int i = 0; i < playerAmount; i++) {
 		//Gives them cards
-		getCards(&players[i], myDeck, cardsDealt);
+		getCards(&players[i], myDeck, cardsDealt, matchDeck);
 
 		//Debug to print their hand
 		printf("%s has cards:\n", players[i].name);
@@ -730,17 +755,17 @@ int main(void)
 				if (found != NULL) {
 					cardsFound++;
 					addCard(found, &players[player].headl, &players[player].headr);
-					checkMatch(&players[player], found->value, 4);
+					checkMatch(&players[player], found->value, 4, matchDeck);
 				}
 			}
 
 			//This occurs when the user has to go fish
 			card *goFishCard = NULL;
 			if (!cardsFound) {
-				goFishCard = goFish(myDeck, &players[player]);
+				goFishCard = goFish(myDeck, &players[player], matchDeck);
 				//Checks if card is a match when the go fished card is not NULL
 				if(goFishCard != NULL)
-					checkMatch(&players[player], goFishCard->value, 4);
+					checkMatch(&players[player], goFishCard->value, 4, matchDeck);
 			}//Tells the player how many cards they found form the user
 			else {
 				//Fixes the grammar of the sentences
@@ -752,11 +777,11 @@ int main(void)
 
 			//Adds cards to hand if the opponents hand are empty
 			if (players[player].headl == NULL)
-				getCards(&players[player], myDeck, cardsDealt);
+				getCards(&players[player], myDeck, cardsDealt, matchDeck);
 
 			//Adds cards to hand if the players hand are empty
 			if (players[pickedPlayer].headl == NULL)
-				getCards(&players[pickedPlayer], myDeck, cardsDealt);
+				getCards(&players[pickedPlayer], myDeck, cardsDealt, matchDeck);
 
 			//prints newline to mark a new round
 			printf("\n|-------------------------------------------------------------------------------------------------------|\n");
@@ -785,5 +810,11 @@ int main(void)
 
 	//States who won
 	getWinners(players, playerAmount);
+
+	//Free all the memory
+	free(players);
+	free(myDeck);
+	freeMatchDeckCards(matchDeck->headl);
+	free(matchDeck);
 
 }
